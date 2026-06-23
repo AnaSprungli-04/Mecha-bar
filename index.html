@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>MECHA · Reviví tu juventud</title>
+  <meta name="description"
+    content="Una experiencia inmersiva en Buenos Aires. Noviembre 2026. Si hay chispa, puede explotar." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;700&family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500;0,9..144,600&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+
+  <canvas id="webgl" aria-hidden="true"></canvas>
+  <div id="flash" aria-hidden="true"></div>
+
+  <div id="fuse" aria-hidden="true">
+    <div class="track"></div>
+    <div class="burn"></div>
+    <div class="spark"></div>
+    <div class="lbl">MECHA</div>
+  </div>
+
+  <div id="sound" class="muted" role="button" tabindex="0" aria-label="Activar o silenciar sonido">
+    <span class="dot"></span><span class="txt">Sonido</span>
+  </div>
+
+  <div id="gate">
+    <div class="mark">MECHA<span class="spark">.</span></div>
+    <div class="tag">Si hay chispa, puede explotar.</div>
+    <button class="enter" id="enterBtn">Entrar con sonido</button>
+    <div class="small">Auriculares recomendados · scrolleá despacio</div>
+  </div>
+
+  <section id="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Experiencia inmersiva · CABA</div>
+      <h1>Reviví<br>tu <em>juventud</em></h1>
+      <div class="soon">Coming soon · Noviembre 2026</div>
+      <div class="btns">
+        <button class="cta" id="ticketsBtn">Sacá entradas</button>
+        <button class="cta ghost" id="diveBtn">Vivir la noche</button>
+      </div>
+    </div>
+    <div class="scrollcue"><span>Entrá en la niebla</span><span class="line"></span></div>
+  </section>
+
+  <div id="ghost">
+    <div id="ghost-content"></div>
+  </div>
+
+  <div id="ui-overlay" aria-hidden="true">
+    <p class="q" data-scene="0"><small>El mozo te avisa</small>Un muchacho de la barra<br>les invitó un trago.</p>
+    <p class="q" data-scene="1">¿Cuándo fue la última vez<br>que te reíste perdiendo?</p>
+    <p class="q" data-scene="2">¿Cuándo te empezó<br>a dar miedo el rechazo?</p>
+    <p class="q" data-scene="3">¿Cuánto tomaste?</p>
+    <p class="q" data-scene="4"><small>El clásico</small>Poné esa que hacía que<br>la noche arranque en serio.</p>
+    <p class="q statement" data-scene="5"><small>Invita la casa</small>Si hay chispa,<br>puede explotar.</p>
+    <p class="q" data-scene="6">¿Hace cuánto<br>dejaste de animarte?</p>
+    <p class="q statement" data-scene="7"><small>Tu juventud te espera</small>¿A ver si<br>te animás?</p>
+  </div>
+
+  <div id="land-spacer"></div>
+
+  <section id="land">
+    <div class="wrap">
+      <div class="closer">
+        <div class="big">No viniste a ver<br>una historia.<br><em>Reviviste la tuya.</em></div>
+        <div class="sub">Acabás de hacerlo de nuevo.</div>
+      </div>
+      <div class="signup" id="signup">
+        <h2>Reservá tu lugar</h2>
+        <p class="lead">Las primeras noches son íntimas: grupos chicos, cupos contados. Dejanos tu mail y te avisamos
+          antes que a nadie cuando abran las reservas.</p>
+        <form class="row" id="signupForm" novalidate>
+          <input id="email" type="email" required placeholder="tu@mail.com" aria-label="Email" />
+          <button id="joinBtn" type="submit">Anotarme</button>
+        </form>
+        <div class="done" id="doneMsg" role="status"></div>
+      </div>
+      <div class="facts">
+        <div class="fact">
+          <div class="k">Duración</div>
+          <div class="v">~25 minutos<small>Una sola noche, de principio a fin</small></div>
+        </div>
+        <div class="fact">
+          <div class="k">Edad</div>
+          <div class="v">Mayores de 18<small>Se sirve alcohol</small></div>
+        </div>
+        <div class="fact">
+          <div class="k">Cuándo</div>
+          <div class="v">Noviembre 2026<small>Fechas por confirmar</small></div>
+        </div>
+        <div class="fact">
+          <div class="k">Dónde</div>
+          <div class="v">Av. Corrientes 2037<small>C1001 · CABA</small></div>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="m">MECHA<span class="spark">.</span></div>
+      <div class="t">Si hay chispa, puede explotar.</div>
+      <div class="legal">© 2026 MECHA · Experiencia inmersiva · Buenos Aires</div>
+    </footer>
+  </section>
+
+  <noscript>
+    <style>
+      #webgl,
+      #ghost,
+      #ui-overlay,
+      #fuse,
+      #sound,
+      #gate,
+      #flash {
+        display: none !important
+      }
+
+      #land-spacer {
+        display: none !important
+      }
+
+      body {
+        overflow: auto !important;
+        height: auto !important
+      }
+    </style>
+  </noscript>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>

@@ -18,6 +18,18 @@
 
   <canvas id="webgl" aria-hidden="true"></canvas>
   <div id="flash" aria-hidden="true"></div>
+  <div id="spotlight" aria-hidden="true"></div>
+  <div id="blackout" aria-hidden="true"></div>
+
+  <div id="karaoke" aria-hidden="true">
+    <p id="karaoke-question">¿A ver si<br>te animás?</p>
+    <div id="song-buttons">
+      <button class="song-btn" data-song="deMusicaLigera">De Música Ligera</button>
+      <button class="song-btn" data-song="ochoCuarenta">Ocho Cuarenta</button>
+      <button class="song-btn" data-song="lamentoBoliviano">Lamento Boliviano</button>
+    </div>
+    <p id="karaoke-lyrics"></p>
+  </div>
 
   <div id="fuse" aria-hidden="true">
     <div class="track"></div>
@@ -55,13 +67,19 @@
   </div>
 
   <div id="ui-overlay" aria-hidden="true">
+    <p class="q-note" data-scene="0">Brindas con tu yo joven</p>
+    <p class="q-note" data-scene="1">Jugas al tejo con tus amigos</p>
+    <p class="q-note" data-scene="2">Vivis una cita inolvidable</p>
+    <p class="q-note" data-scene="3">Sentis de nuevo los efectos de tomar un poquito de mas</p>
+    <p class="q-note" data-scene="4">Elegis la musica que te hacia vibrar</p>
+    <p class="q-note" data-scene="5">Nos conoces en nuestro prime</p>
     <p class="q" data-scene="0"><small>El mozo te avisa</small>Un muchacho de la barra<br>les invitó un trago.</p>
-    <p class="q" data-scene="1">¿Cuándo fue la última vez<br>que te reíste perdiendo?</p>
-    <p class="q" data-scene="2">¿Cuándo te empezó<br>a dar miedo el rechazo?</p>
-    <p class="q" data-scene="3">¿Cuánto tomaste?</p>
+    <p class="q" data-scene="1"><small></small>¿Cuándo fue la última vez<br>que te reíste perdiendo?</p>
+    <p class="q" data-scene="2"><small>Alguien te esta mirando</small>¿Cuándo te empezó<br>a dar miedo el rechazo?</p>
+    <p class="q" data-scene="3"><small>Guarda que tomaste mucho</small>¿Cuánto tomaste?</p>
     <p class="q" data-scene="4"><small>El clásico</small>Poné esa que hacía que<br>la noche arranque en serio.</p>
     <p class="q statement" data-scene="5"><small>Invita la casa</small>Si hay chispa,<br>puede explotar.</p>
-    <p class="q" data-scene="6">¿Hace cuánto<br>dejaste de animarte?</p>
+    <p class="q" data-scene="6"><small></small>¿Hace cuánto<br>dejaste de animarte?</p>
     <p class="q statement" data-scene="7"><small>Tu juventud te espera</small>¿A ver si<br>te animás?</p>
   </div>
 

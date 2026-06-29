@@ -51,8 +51,12 @@ function runDegraded() {
   function enter() {
     document.getElementById('gate').classList.add('hidden');
     document.getElementById('sound').classList.add('on');
-    Audio.start().then(() => ui.setSoundUI(false));
+    Audio.start().then(() => { ui.setSoundUI(false); Audio.playHome(); });
   }
+  const landEl = document.getElementById('land');
+  new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) Audio.cue('final');
+  }, { threshold: 0.3 }).observe(landEl);
   document.getElementById('enterBtn').addEventListener('click', enter);
   document.getElementById('gate').addEventListener('click', (e) => { if (e.target.id === 'gate') enter(); });
   document.getElementById('diveBtn').addEventListener('click', () => {
@@ -94,10 +98,75 @@ function runImmersive() {
   let lenis = createLenis();
 
   let landed = false;
+  let scrollLocked = true;
+  let endingTriggered = false;
   let lastAudioCue = null;
   let running = false;
   let rafId = null;
   const clock = new THREE.Clock();
+
+  // ── Letras de las canciones ──────────────────────────────────────────────
+  // Formato: { t: segundos_desde_inicio_cancion, text: 'línea de letra' }
+  // Rellenar cuando Ana nos dé el timing.
+  const SONG_LYRICS = {
+    deMusicaLigera: ["Que nunca sorteé", "Las trampas del amor", "De aquel amor", "De música ligera", "Nada nos libra"],
+    ochoCuarenta: ["Con chamuyos elegantes, le pintó el mundo al revés", "para que siempre lo banqué, de primera la hizo bien", "El amor sobre toda diferencia social", "dentro del calendario cada día se va", "a pesar de las dudas"],
+    lamentoBoliviano: ["Uoh, io, io, io-uoh-oh, ye-eh-eh-eh, yeh-eh.", "Y yo estoy aquí", "Borracho y loco", "Y mi corazón idiota", "Siempre brillará (Siempre brillará)", "Y yo te amaré"],
+  };
+
+  // Segundos desde que arranca la canción hasta el corte total → finalfinal
+  // Actualizar por canción cuando Ana lo indique.
+  const SONG_CUTOFF_SECS = {
+    deMusicaLigera: 60,
+    ochoCuarenta: 60,
+    lamentoBoliviano: 60,
+  };
+
+  function triggerEnding() {
+    Audio.fadeBed(1.5);
+    document.getElementById('spotlight').classList.add('on');
+    setTimeout(() => {
+      document.getElementById('karaoke-question').classList.add('on');
+      Audio.playFinal().then(() => {
+        document.getElementById('song-buttons').classList.add('on');
+      });
+    }, 1000);
+  }
+
+  function onSongChosen(song) {
+    document.getElementById('song-buttons').classList.remove('on');
+    document.getElementById('karaoke-question').classList.remove('on');
+    const lyricsEl = document.getElementById('karaoke-lyrics');
+    lyricsEl.classList.add('on');
+    Audio.startSong(song, SONG_LYRICS[song] || [], (text) => { lyricsEl.textContent = text; }, () => {
+      const blackoutEl = document.getElementById('blackout');
+      blackoutEl.classList.add('on');
+      document.getElementById('karaoke').style.display = 'none';
+      document.getElementById('spotlight').classList.remove('on');
+      const overlay = document.getElementById('ui-overlay');
+      overlay.classList.add('final');
+      const finalQ = overlay.querySelector('[data-scene="7"]');
+      finalQ.style.transform = 'translate(-50%,-50%)';
+      finalQ.style.opacity = '1';
+      Audio.cutAll();
+      setTimeout(() => Audio.playFinalFinal(), 100);
+
+      // Después de que el usuario lea la frase, transición a la sección de reservas
+      setTimeout(() => {
+        land(true);
+        finalQ.style.transition = 'opacity 1.5s ease';
+        finalQ.style.opacity = '0';
+        setTimeout(() => {
+          blackoutEl.style.transition = 'opacity 2.5s ease';
+          blackoutEl.classList.remove('on');
+        }, 800);
+      }, 4000);
+    });
+  }
+
+  document.querySelectorAll('.song-btn').forEach((btn) => {
+    btn.addEventListener('click', () => onSongChosen(btn.dataset.song));
+  });
 
   function land(instant) {
     if (landed) return;
@@ -138,7 +207,7 @@ function runImmersive() {
   }
 
   function frame(time) {
-    if (!landed) lenis.raf(time);
+    if (!landed && !scrollLocked) lenis.raf(time);
     const progress = progressOf();
     const t = clock.getElapsedTime();
 
@@ -149,27 +218,38 @@ function runImmersive() {
     const heroOut = clamp((progress - 0.003) / 0.08, 0, 1);
     ui.updateHero(heroOut);
     ui.updateQuestions(progress, presences);
-    const exploded = ui.updateFlash(progress);
-    ui.updateFuse(progress, exploded);
+
+    let exploded = false;
+    if (!endingTriggered) {
+      const explodeVal = ui.updateFlash(progress);
+      exploded = explodeVal > 0;
+      ui.updateFuse(progress, exploded);
+      if (explodeVal >= 1) {
+        endingTriggered = true;
+        scrollLocked = true;
+        const flashEl = document.getElementById('flash');
+        flashEl.style.transition = 'opacity 1.5s ease';
+        flashEl.style.opacity = '0';
+        triggerEnding();
+      }
+    }
 
     // chromatic aberration ramps up around whichever beat is flagged `distort` (the bathroom), settles after
     fx.setChromaAberration(prefersReduced || distortIdx < 0 ? 0 : presences[distortIdx] || 0);
 
-    const cue = exploded
-      ? 'explosion'
-      : (progress > Q_FINAL
-        ? 'silence'
+    if (!endingTriggered) {
+      const cue = exploded
+        ? 'explosion'
         : (() => {
-          // anchor: which beat's zone the camera is currently in, by scroll-progress
-          // threshold (see scene.js getCurrentAnchor) — not by who has more presence.
           const anchorMem = world.memories.find((m) => m.id === getCurrentAnchor(progress, world.scenes));
           return anchorMem ? anchorMem.audio : null;
-        })());
-    if (cue && cue !== lastAudioCue) { Audio.cue(cue); lastAudioCue = cue; }
+        })();
+      if (cue && cue !== lastAudioCue) { Audio.cue(cue); lastAudioCue = cue; }
+    }
 
     fx.render(clock.getDelta());
 
-    if (progress >= 0.999) land(false);
+    if (progress >= 0.999 && !endingTriggered) land(false);
 
     rafId = requestAnimationFrame(frame);
   }
@@ -192,7 +272,11 @@ function runImmersive() {
     document.body.classList.add('entered');
     ui.setEntered();
     lenis.scrollTo(0, { immediate: true }); // discard any stray scroll accumulated while the gate was up
-    Audio.start().then(() => ui.setSoundUI(false));
+    Audio.start().then(() => {
+      ui.setSoundUI(false);
+      Audio.cutAll();
+      Audio.playHome().then(() => { scrollLocked = false; });
+    });
     startLoop();
   }
   document.getElementById('enterBtn').addEventListener('click', enter);

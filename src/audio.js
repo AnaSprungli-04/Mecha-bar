@@ -11,10 +11,17 @@ const AUDIO_FILES = {
   cuadro: '/audio/cuadro.mp3',
   baile: '/audio/baile.mp3',
   explosion: '/audio/explosion.mp3',
+  home: '/audio/Home.mp3',
+  final: '/audio/final.mp3',
+  deMusicaLigera: '/audio/deMusicaLigera.mp3',
+  ochoCuarenta: '/audio/ochoCuarenta.mp3',
+  lamentoBoliviano: '/audio/lamentoBoliviano.mp3',
+  finalfinal: '/audio/finalfinal.mp3',
 };
 
 export function createAudio() {
-  let ctx, master, bedGain, started = false, on = false;
+  let ctx, master, bedGain, bedRealGain, started = false, on = false, bedStarted = false;
+  let lastCueSrc = null, lastCueGain = null, lastCueName = null;
   const buffers = {};
 
   function ensure() {
@@ -44,12 +51,19 @@ export function createAudio() {
         buffers[key] = await ctx.decodeAudioData(await res.arrayBuffer());
       } catch (e) { /* fall back to synth cue */ }
     }));
+  }
+
+  function kickBed() {
+    if (bedStarted) return;
+    bedStarted = true;
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 1.5);
     if (buffers.bed) {
       const src = ctx.createBufferSource();
       src.buffer = buffers.bed; src.loop = true;
-      const g = ctx.createGain(); g.gain.value = 0;
-      src.connect(g); g.connect(master); src.start();
-      g.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 2);
+      bedRealGain = ctx.createGain(); bedRealGain.gain.value = 0;
+      src.connect(bedRealGain); bedRealGain.connect(master); src.start();
+      bedRealGain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 2);
       bedGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 2);
     }
   }
@@ -96,13 +110,79 @@ export function createAudio() {
     },
     get muted() { return !on; },
     get isStarted() { return started; },
+    playHome() {
+      return new Promise((resolve) => {
+        if (!started || !on || !ctx || !buffers.home) { kickBed(); resolve(); return; }
+        const s = ctx.createBufferSource();
+        s.buffer = buffers.home;
+        const g = ctx.createGain(); g.gain.value = 0.9;
+        s.connect(g); g.connect(ctx.destination);
+        s.onended = () => { kickBed(); resolve(); };
+        s.start();
+      });
+    },
+    fadeBed(duration = 1.5) {
+      if (!ctx) return;
+      const t = ctx.currentTime + duration;
+      if (bedRealGain) bedRealGain.gain.linearRampToValueAtTime(0, t);
+      if (bedGain) bedGain.gain.linearRampToValueAtTime(0, t);
+    },
+    playFinal() {
+      return new Promise((resolve) => {
+        if (!started || !ctx || !buffers.final) { resolve(); return; }
+        const s = ctx.createBufferSource();
+        s.buffer = buffers.final;
+        const g = ctx.createGain(); g.gain.value = 0.9;
+        s.connect(g); g.connect(ctx.destination);
+        s.onended = resolve;
+        s.start();
+      });
+    },
+    startSong(name, lyrics, onLyric, onEnd) {
+      if (!started || !ctx) return;
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 0.1);
+      if (buffers[name]) {
+        const s = ctx.createBufferSource();
+        s.buffer = buffers[name];
+        const g = ctx.createGain(); g.gain.value = 0.9;
+        s.connect(g); g.connect(master);
+        if (onEnd) s.onended = onEnd;
+        s.start();
+      }
+      lyrics.forEach((item, i) => {
+        const delay = typeof item === 'string' ? i * 3000 : item.t * 1000;
+        const text  = typeof item === 'string' ? item : item.text;
+        setTimeout(() => onLyric(text), delay);
+      });
+    },
+    cutAll() {
+      if (!ctx) return;
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setValueAtTime(0, ctx.currentTime);
+    },
+    playFinalFinal() {
+      if (!ctx || !buffers.finalfinal) return;
+      const s = ctx.createBufferSource();
+      s.buffer = buffers.finalfinal;
+      const g = ctx.createGain(); g.gain.value = 0;
+      s.connect(g); g.connect(ctx.destination);
+      s.start();
+      g.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 1.5);
+    },
     cue(name) {
       if (!started || !on || !ctx) return;
       const t = ctx.currentTime + 0.02;
+      if (lastCueSrc && lastCueName !== name) {
+        if (lastCueGain) lastCueGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
+        try { lastCueSrc.stop(ctx.currentTime + 0.8); } catch {}
+        lastCueSrc = null; lastCueGain = null; lastCueName = null;
+      }
       if (buffers[name]) {
         const s = ctx.createBufferSource(); s.buffer = buffers[name];
         const g = ctx.createGain(); g.gain.value = 0.8;
         s.connect(g); g.connect(master); s.start(t);
+        lastCueSrc = s; lastCueGain = g; lastCueName = name;
         return;
       }
       if (name === 'salud') clink(t);

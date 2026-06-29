@@ -19,6 +19,7 @@ export function createUI() {
     fuseSpark: document.querySelector('#fuse .spark'),
     flash: document.getElementById('flash'),
     questions: [...document.querySelectorAll('.q')],
+    notes: [...document.querySelectorAll('.q-note')],
     signupForm: document.getElementById('signupForm'),
     email: document.getElementById('email'),
     doneMsg: document.getElementById('doneMsg'),
@@ -54,11 +55,8 @@ export function createUI() {
       const q = el.questions[i];
       q.style.opacity = qO.toFixed(3);
       q.style.transform = `translate(-50%, calc(-50% + ${((1 - qO) * 22).toFixed(1)}px))`;
+      if (el.notes[i]) el.notes[i].style.opacity = qO.toFixed(3);
     }
-    const qf = clamp(smooth(1 - Math.abs(progress - Q_FINAL) / 0.025), 0, 1);
-    el.questions[6].style.opacity = qf.toFixed(3);
-    el.questions[6].style.transform = `translate(-50%,-50%) scale(${(1 + 0.05 * qf).toFixed(3)})`;
-
     // ramps in over 0.02 so it's at full opacity well before the 0.999 land
     // threshold, instead of finishing right on top of it (it used to flash by).
     const qc = progress > Q_CLOSE ? clamp((progress - Q_CLOSE) / 0.02, 0, 1) : 0;
@@ -75,7 +73,7 @@ export function createUI() {
   function updateFlash(progress) {
     const explode = progress > FLASH_AT ? clamp((progress - FLASH_AT) / 0.03, 0, 1) : 0;
     el.flash.style.opacity = (explode * 0.95).toFixed(3);
-    return explode > 0;
+    return explode;
   }
 
   function bindSignup(onSubmit) {

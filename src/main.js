@@ -135,7 +135,6 @@ function runImmersive() {
 
   function onSongChosen(song) {
     document.getElementById('song-buttons').classList.remove('on');
-    document.getElementById('karaoke-question').classList.remove('on');
     const lyricsEl = document.getElementById('karaoke-lyrics');
     lyricsEl.classList.add('on');
     Audio.startSong(song, SONG_LYRICS[song] || [], (text) => { lyricsEl.textContent = text; }, () => {
@@ -147,9 +146,13 @@ function runImmersive() {
       overlay.classList.add('final');
       const finalQ = overlay.querySelector('[data-scene="7"]');
       finalQ.style.transform = 'translate(-50%,-50%)';
-      finalQ.style.opacity = '1';
+      finalQ.style.transition = 'opacity 1.8s ease';
+      finalQ.style.opacity = '0';
       Audio.cutAll();
-      setTimeout(() => Audio.playFinalFinal(), 100);
+      setTimeout(() => {
+        Audio.playFinalFinal();
+        finalQ.style.opacity = '1';
+      }, 100);
 
       // Después de que el usuario lea la frase, transición a la sección de reservas
       setTimeout(() => {
@@ -187,6 +190,7 @@ function runImmersive() {
   function unland() {
     if (!landed) return;
     landed = false;
+    scrollLocked = false;
     document.body.classList.remove('landed');
     document.body.classList.add('locked');
     lenis = createLenis();
@@ -249,7 +253,7 @@ function runImmersive() {
 
     fx.render(clock.getDelta());
 
-    if (progress >= 0.999 && !endingTriggered) land(false);
+    if (progress >= 0.999) land(false);
 
     rafId = requestAnimationFrame(frame);
   }

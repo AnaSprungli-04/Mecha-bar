@@ -273,6 +273,7 @@ function runImmersive() {
     document.body.classList.add('entered');
     ui.setEntered();
     lenis.scrollTo(0, { immediate: true }); // discard any stray scroll accumulated while the gate was up
+    world.memories.forEach((m) => m.load()); // preload all assets while home audio plays
     Audio.start().then(() => {
       ui.setSoundUI(false);
       Audio.cutAll();

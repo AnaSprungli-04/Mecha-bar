@@ -162,13 +162,16 @@ export function createAudio() {
       master.gain.setValueAtTime(0, ctx.currentTime);
     },
     playFinalFinal() {
-      if (!ctx || !buffers.finalfinal) return;
-      const s = ctx.createBufferSource();
-      s.buffer = buffers.finalfinal;
-      const g = ctx.createGain(); g.gain.value = 0;
-      s.connect(g); g.connect(ctx.destination);
-      s.start();
-      g.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 1.5);
+      return new Promise((resolve) => {
+        if (!ctx || !buffers.finalfinal) { resolve(); return; }
+        const s = ctx.createBufferSource();
+        s.buffer = buffers.finalfinal;
+        const g = ctx.createGain(); g.gain.value = 0;
+        s.connect(g); g.connect(ctx.destination);
+        s.onended = resolve;
+        s.start();
+        g.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 1.5);
+      });
     },
     cue(name) {
       if (!started || !on || !ctx) return;

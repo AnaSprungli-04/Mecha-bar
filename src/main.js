@@ -110,7 +110,7 @@ function runImmersive() {
   // Rellenar cuando Ana nos dé el timing.
   const SONG_LYRICS = {
     deMusicaLigera: ["Que nunca sorteé", "Las trampas del amor", "De aquel amor", "De música ligera", "Nada nos libra"],
-    ochoCuarenta: ["Con chamuyos elegantes, le pintó el mundo al revés", "para que siempre lo banqué, de primera la hizo bien", "El amor sobre toda diferencia social", "dentro del calendario cada día se va", "a pesar de las dudas"],
+    ochoCuarenta: ["Con chamuyos elegantes", "le pintó el mundo al revés", "para que siempre lo banqué", "de primera la hizo bien", "El amor sobre toda diferencia social", "dentro del calendario cada día se va", "a pesar de las dudas"],
     lamentoBoliviano: ["Uoh, io, io, io-uoh-oh, ye-eh-eh-eh, yeh-eh.", "Y yo estoy aquí", "Borracho y loco", "Y mi corazón idiota", "Siempre brillará (Siempre brillará)", "Y yo te amaré"],
   };
 
@@ -150,20 +150,17 @@ function runImmersive() {
       finalQ.style.opacity = '0';
       Audio.cutAll();
       setTimeout(() => {
-        Audio.playFinalFinal();
         finalQ.style.opacity = '1';
+        Audio.playFinalFinal().then(() => {
+          land(true);
+          setTimeout(() => {
+            blackoutEl.style.transition = 'opacity 2.5s ease';
+            blackoutEl.classList.remove('on');
+            finalQ.style.transition = 'opacity 2.5s ease';
+            finalQ.style.opacity = '0';
+          }, 300);
+        });
       }, 100);
-
-      // Después de que el usuario lea la frase, transición a la sección de reservas
-      setTimeout(() => {
-        land(true);
-        finalQ.style.transition = 'opacity 1.5s ease';
-        finalQ.style.opacity = '0';
-        setTimeout(() => {
-          blackoutEl.style.transition = 'opacity 2.5s ease';
-          blackoutEl.classList.remove('on');
-        }, 800);
-      }, 4000);
     });
   }
 

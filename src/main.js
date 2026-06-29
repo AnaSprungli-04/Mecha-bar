@@ -218,7 +218,7 @@ function runImmersive() {
     // on its own — it only starts dissolving once the user is clearly scrolling.
     const heroOut = clamp((progress - 0.003) / 0.08, 0, 1);
     ui.updateHero(heroOut);
-    ui.updateQuestions(progress, presences);
+    if (!endingTriggered) ui.updateQuestions(progress, presences);
 
     let exploded = false;
     if (!endingTriggered) {
@@ -250,7 +250,7 @@ function runImmersive() {
 
     fx.render(clock.getDelta());
 
-    if (progress >= 0.999) land(false);
+    if (progress >= 0.999 && !endingTriggered) land(false);
 
     rafId = requestAnimationFrame(frame);
   }
